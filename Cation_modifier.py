@@ -96,8 +96,21 @@ Process:
         6-4: after running this cycle, add this atom to the member list.
     7. Convert the members to label form..?
         molecule.append(site_index2label[struct.index(atom)])
+        
+    Maybe I can further automate this process by starting with C atoms
+    Molecules - list of followings:
+        molecule - list of atomic labels
 '''
 
+
+'''
+    Molecule data bases?
+    LA, FA, MA, etc..?
+    and possibly store their center of mass?:
+        Some molecules used for RP phases, the center of mass would not be very good idea
+    1. Center of mass from mass-weighted average
+    2. Volumetric center of mass..? by using convex hull?
+'''
     
 
 
