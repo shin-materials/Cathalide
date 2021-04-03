@@ -68,18 +68,61 @@ neighbors=struct.get_neighbors(starting_atom,r=3)
 ### Let's make dictionaly with C-N, C-H entires.
 ### Make the data doulbe so that it can contain N-C, H-C entries with same bond length.
 bond_dict=dict()
-bond_dict['C-H']=1.20000
-bond_dict['H-C']=1.20000
-bond_dict['N-C']=1.79202
-bond_dict['C-N']=1.79202
-for atom in neighbors:
-    # if the distance between two atoms is less then defined bond length,
-    # then I add it to 
-    if starting_atom.distance(atom) < bond_dict[str(starting_atom.specie)+ \
-                                                '-'+str(atom.specie)]:
-        print('yes')
-    else:
-        print('no')
+bond_data_file=open('Bond_data_from_VESTA.dat','r')
+data= bond_data_file.readlines()
+for i,line in enumerate(data):
+    # line example
+    # 'Zr     H    0.00000    2.29004  0  1  1  0  1'
+    temp=line.split()
+    bond_dict[temp[0]+'-'+temp[1]]=float(temp[3])
+    bond_dict[temp[1]+'-'+temp[0]]=float(temp[3])
+
+# list of atom labels composing a molecule (done for bond searching)
+molecule=[]
+# list of atom labels (neighbor searching needs to be done before added to molecule list)
+atoms_to_search=[]
+atoms_to_search.append(site_index2label[struct.index(starting_atom)])
+
+loop_flag=1
+while loop_flag == 1:
+    A1_label=atoms_to_search[0]
+    A1=struct.sites[label2site_index[A1_label]]
+    A1_element=str(A1.specie)
+    print('A1 is '+A1_label)
+    neighbors=struct.get_neighbors(struct.sites[label2site_index[A1_label]],r=3.0)
+    # print(neighbors)
+    for A2 in neighbors:
+        # if the distance between two atoms is less then defined bond length,
+        # then I add it to 
+        A2.to_unit_cell(in_place=True)
+        A2_label = site_index2label[struct.index(A2)]
+        # .to_unit_cell(in_place=True)
+        # try:
+        #     A2_label = site_index2label[struct.index(A2)]
+        # except ValueError:
+        #     print(A2_label)
+        #     A2_label = site_index2label[struct.index(A2.to_unit_cell)]
+        print('A2 is '+A2_label)
+        # print(atom_label)
+        if (A1_element+'-'+str(A2.specie)) in bond_dict.keys():
+            if A1.distance(A2) < \
+                bond_dict[A1_element+'-'+str(A2.specie)] and \
+                A2_label not in molecule and \
+                A2_label not in atoms_to_search[1:]:
+                # bond_dict[str(starting_atom.specie)+'-'+str(atom.specie)]:
+                # if atom_label not in molecule and atom_label not in atoms_to_search[1:]:
+                #     atoms_to_search.append(atom_label)
+                # if atom_label not in molecule and atom_label not in atoms_to_search:
+                #     atoms_
+                atoms_to_search.append(A2_label)
+                print(A2_label+'added')
+    
+    molecule.append(A1_label)
+    atoms_to_search.remove(A1_label)
+    if len(atoms_to_search) == 0:
+        loop_flag=0
+    print(atoms_to_search)
+
 '''
 Process:
     1. Start from starting atom
