@@ -6,7 +6,8 @@ from scipy.spatial.transform import Rotation as R
 from Functions import molecule_rotation, convert_site_index
 import copy
 
-struct = Structure.from_file("Test_structures/FPB_bulk_cubic.vasp")
+# struct = Structure.from_file("Test_structures/FPB_bulk_cubic.vasp")
+struct = Structure.from_file("test.vasp")
 
 #Need to do:
 # Rotation of cations
@@ -144,7 +145,10 @@ Process:
     Molecules - list of followings:
         molecule - list of atomic labels
 '''
-
+'''
+ Maybe I have to use pandas to connect label, site, and index?
+ element as well
+'''
 
 '''
     Molecule data bases?
