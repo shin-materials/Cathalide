@@ -5,6 +5,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from Functions import molecule_rotation, convert_site_index
 import copy
+import pandas as pd
 
 # struct = Structure.from_file("Test_structures/FPB_bulk_cubic.vasp")
 struct = Structure.from_file("test.vasp")
@@ -26,18 +27,49 @@ elements_list=['C','H','N']
 
 n_atom_count_dict=dict()
 label2site_index=dict()
+# # for i in range(0,struct.num_sites):
+# #     # Update label for each element
+# #     if struct[i].specie in list(n_atom_count_dict.keys()):
+# #         n_atom_count_dict.update({struct[i].specie:n_atom_count_dict[struct[i].specie]+1})
+# #     else:
+# #         n_atom_count_dict.update({struct[i].specie:1})
+# #     #Example: BaTiO3 --> Ba1:0 Ti1:1 O1:2 O2:3 O3:4
+# #     label2site_index.update({'{0}{1}'.format(struct.species[i], n_atom_count_dict[struct[i].specie]):i})
+
+# site_index2label=dict()
+# # for key,value in label2site_index.items():
+# #     site_index2label[value]=key
+
+
+
+############## USING PANDAS DATAFRAME ##########################
+n_atom_count_dict=dict()
+df=pd.DataFrame(columns=['site_index','atom_label','pmg_site','element'])
 for i in range(0,struct.num_sites):
     # Update label for each element
     if struct[i].specie in list(n_atom_count_dict.keys()):
         n_atom_count_dict.update({struct[i].specie:n_atom_count_dict[struct[i].specie]+1})
     else:
         n_atom_count_dict.update({struct[i].specie:1})
-    #Example: BaTiO3 --> Ba1:0 Ti1:1 O1:2 O2:3 O3:4
-    label2site_index.update({'{0}{1}'.format(struct.species[i], n_atom_count_dict[struct[i].specie]):i})
+        
+    label='{0}{1}'.format(struct.species[i], n_atom_count_dict[struct[i].specie])
+    # Append a site to the data frame
+    # If this part is costly, maybe using pd.concat would be faster (not sure yet)
+    df= df.append({'site_index':i, \
+                'atom_label':'{0}{1}'.format(struct.species[i], n_atom_count_dict[struct[i].specie]), \
+                'pmg_site':struct.sites[i],\
+                'element':str((struct.sites[i]).specie)},ignore_index=True)
+    
 
-site_index2label=dict()
-for key,value in label2site_index.items():
-    site_index2label[value]=key
+# df.append({'site_index':0,
+#            'atom_label':'C1',
+#            'pmg_stie':struct.sites[label2site_index['C1']],
+#            'element':(struct.sites[label2site_index['C1']]).specie},
+#           ignore_index=True)
+# when getting a value
+# df[df['site_index']==2]['atom_label'].iloc[0]
+################################################################
+
 
 def Bond_length(pmg_struct, label2site_index, atom1_label,atom2_label):
     '''
@@ -62,7 +94,12 @@ molecules_list.append(molecule)
 import pandas as pd
 bond_csv=pd.read_csv('Bond_data_from_VESTA.csv')
 molecule_formula='CN2H5'
-starting_atom=struct.sites[label2site_index['C1']]
+
+
+# starting_atom=struct.sites[label2site_index['C1']]
+# pd version
+starting_atom=df[df['atom_label']=='C1']['pmg_site'].iloc[0]
+
 # neighbors is a list of pmg_sites
 neighbors=struct.get_neighbors(starting_atom,r=3)
 
@@ -82,21 +119,37 @@ for i,line in enumerate(data):
 molecule=[]
 # list of atom labels (neighbor searching needs to be done before added to molecule list)
 atoms_to_search=[]
-atoms_to_search.append(site_index2label[struct.index(starting_atom)])
+
+# atoms_to_search.append(site_index2label[struct.index(starting_atom)])
+# Pandas version
+atoms_to_search.append(df[df['pmg_site']==starting_atom]['atom_label'].iloc[0])
 
 loop_flag=1
 while loop_flag == 1:
     A1_label=atoms_to_search[0]
-    A1=struct.sites[label2site_index[A1_label]]
+    
+    # A1=struct.sites[label2site_index[A1_label]]
+    # pd version
+    A1=df[df['atom_label']==A1_label]['pmg_site'].iloc[0]
     A1_element=str(A1.specie)
+    
     print('A1 is '+A1_label)
-    neighbors=struct.get_neighbors(struct.sites[label2site_index[A1_label]],r=3.0)
+    
+    #neighbors=struct.get_neighbors(struct.sites[label2site_index[A1_label]],r=3.0)
+    # pd version
+    neighbors=struct.get_neighbors(A1,r=3.0)
+    
     # print(neighbors)
     for A2 in neighbors:
         # if the distance between two atoms is less then defined bond length,
         # then I add it to 
+        
+        # This line is required as A2 is often indicated to image outside of the cell
         A2.to_unit_cell(in_place=True)
-        A2_label = site_index2label[struct.index(A2)]
+        # A2_label = site_index2label[struct.index(A2)]
+        # pd version
+        A2_label = df[df['pmg_site']==A2]['atom_label'].iloc[0]
+        
         # .to_unit_cell(in_place=True)
         # try:
         #     A2_label = site_index2label[struct.index(A2)]
