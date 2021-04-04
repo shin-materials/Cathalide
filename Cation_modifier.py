@@ -10,11 +10,6 @@ import pandas as pd
 # struct = Structure.from_file("Test_structures/FPB_bulk_cubic.vasp")
 struct = Structure.from_file("test.vasp")
 
-#Need to do:
-# Rotation of cations
-#   1) Identify molecule
-#       How? --> Bond information (maybe from VESTA)
-
 # Read bond data
 # Input data from user: what elements composing the molecule
 elements_list=['C','H','N']
@@ -24,23 +19,6 @@ elements_list=['C','H','N']
 # When replacing inorganic cation to organic molecule,
 # I need to operate with the center of mass
 # command: Element.C.atomic_mass
-
-n_atom_count_dict=dict()
-label2site_index=dict()
-# # for i in range(0,struct.num_sites):
-# #     # Update label for each element
-# #     if struct[i].specie in list(n_atom_count_dict.keys()):
-# #         n_atom_count_dict.update({struct[i].specie:n_atom_count_dict[struct[i].specie]+1})
-# #     else:
-# #         n_atom_count_dict.update({struct[i].specie:1})
-# #     #Example: BaTiO3 --> Ba1:0 Ti1:1 O1:2 O2:3 O3:4
-# #     label2site_index.update({'{0}{1}'.format(struct.species[i], n_atom_count_dict[struct[i].specie]):i})
-
-# site_index2label=dict()
-# # for key,value in label2site_index.items():
-# #     site_index2label[value]=key
-
-
 
 ############## USING PANDAS DATAFRAME ##########################
 n_atom_count_dict=dict()
@@ -59,15 +37,6 @@ for i in range(0,struct.num_sites):
                 'atom_label':'{0}{1}'.format(struct.species[i], n_atom_count_dict[struct[i].specie]), \
                 'pmg_site':struct.sites[i],\
                 'element':str((struct.sites[i]).specie)},ignore_index=True)
-    
-
-# df.append({'site_index':0,
-#            'atom_label':'C1',
-#            'pmg_stie':struct.sites[label2site_index['C1']],
-#            'element':(struct.sites[label2site_index['C1']]).specie},
-#           ignore_index=True)
-# when getting a value
-# df[df['site_index']==2]['atom_label'].iloc[0]
 ################################################################
 
 
@@ -116,89 +85,72 @@ for i,line in enumerate(data):
     bond_dict[temp[1]+'-'+temp[0]]=float(temp[3])
 
 # list of atom labels composing a molecule (done for bond searching)
-molecule=[]
+molecule=[] # ex) molecule=['C1','N1','N2','H1','H2']
 # list of atom labels (neighbor searching needs to be done before added to molecule list)
-atoms_to_search=[]
+atoms_to_search=[]  # ex) molecule=['C1','N1','N2','H1','H2']
 
+# Add starting atom to the atoms_to_search list
 # atoms_to_search.append(site_index2label[struct.index(starting_atom)])
 # Pandas version
 atoms_to_search.append(df[df['pmg_site']==starting_atom]['atom_label'].iloc[0])
 
+# loop_flag will be 0 when there is not atoms to search in atoms_to_search
 loop_flag=1
 while loop_flag == 1:
-    A1_label=atoms_to_search[0]
+    ## FINDING molecule by searching bond from a starting atom
+    # In each loop, we search around A1 atom, called neighbors (A2)
+    # If the discance between A1 and A2 is shorter than the bond length (defined in VESTA setting),
+    # we identify A2 as part of molecule.
+    # Then A2 will be the A1 in the next iteration    
     
-    # A1=struct.sites[label2site_index[A1_label]]
-    # pd version
+    # A1_label is like 'C1'. 
+    # A1 is pmg_site object
+    # A1_element is string of element, like 'C'
+    A1_label=atoms_to_search[0]
     A1=df[df['atom_label']==A1_label]['pmg_site'].iloc[0]
     A1_element=str(A1.specie)
+    # A1=struct.sites[label2site_index[A1_label]]
     
-    print('A1 is '+A1_label)
-    
+    # neighbors is searched with radius of 3 ang. This value is conventionally enough
     #neighbors=struct.get_neighbors(struct.sites[label2site_index[A1_label]],r=3.0)
     # pd version
     neighbors=struct.get_neighbors(A1,r=3.0)
     
-    # print(neighbors)
     for A2 in neighbors:
         # if the distance between two atoms is less then defined bond length,
-        # then I add it to 
+        # then I add it to atoms_to_search
         
         # This line is required as A2 is often indicated to image outside of the cell
+        # Otherwise, sometime this line rasis ValueError
         A2.to_unit_cell(in_place=True)
-        # A2_label = site_index2label[struct.index(A2)]
-        # pd version
         A2_label = df[df['pmg_site']==A2]['atom_label'].iloc[0]
         
-        # .to_unit_cell(in_place=True)
-        # try:
-        #     A2_label = site_index2label[struct.index(A2)]
-        # except ValueError:
-        #     print(A2_label)
-        #     A2_label = site_index2label[struct.index(A2.to_unit_cell)]
-        print('A2 is '+A2_label)
-        # print(atom_label)
+        # There are several conditions before adding to atoms_to_search
+        # 1. the A1-A2 distance needs to be shorter than the bond information
+        # 1-1. 'A1-A2' entry should be in bond_dict dictionary.
+        #       If not, add the information in 'Bond_data_from_VESTA.dat' file.
+        # 2. A2 should not be already in molecule or atoms_to_search list.
+        # 
         if (A1_element+'-'+str(A2.specie)) in bond_dict.keys():
             if A1.distance(A2) < \
                 bond_dict[A1_element+'-'+str(A2.specie)] and \
                 A2_label not in molecule and \
-                A2_label not in atoms_to_search[1:]:
-                # bond_dict[str(starting_atom.specie)+'-'+str(atom.specie)]:
-                # if atom_label not in molecule and atom_label not in atoms_to_search[1:]:
-                #     atoms_to_search.append(atom_label)
-                # if atom_label not in molecule and atom_label not in atoms_to_search:
-                #     atoms_
+                A2_label not in atoms_to_search:
+                # Then, add to atoms_to_search
                 atoms_to_search.append(A2_label)
-                print(A2_label+'added')
-    
+                
+    # After searching around A1 is done, add A1 to molecule member
     molecule.append(A1_label)
+    # Then remove A1 from atoms_to_search list. The next item in the list will be A1 in the next iteration
     atoms_to_search.remove(A1_label)
+    # Modify loop_flag to 0 if there is no item in atoms_to_search.
     if len(atoms_to_search) == 0:
         loop_flag=0
-    print(atoms_to_search)
 
-'''
-Process:
-    1. Start from starting atom
-    2. Search neighbors with arbitrary float value
-    3. check each neighbor whether the distance is shorter than the defined bond length
-    4. if not shorter, abandon the atom
-    5. if shorter:
-        5-1: add the atom to temporary molecule list (which hasn't tested for neighbor search)
-    6. Run another search for each members for temporary member.
-        6-1: check the distance & bond informaiton
-        6-2: if the satisfied atom is already in molecule member list or temporary member list,
-            abandon it.
-        6-3: if it is not, add it to the temporary member list
-        6-4: after running this cycle, add this atom to the member list.
-    7. Convert the members to label form..?
-        molecule.append(site_index2label[struct.index(atom)])
-        
+'''      
     Maybe I can further automate this process by starting with C atoms
     Molecules - list of followings:
         molecule - list of atomic labels
-'''
-'''
  Maybe I have to use pandas to connect label, site, and index?
  element as well
 '''
