@@ -99,7 +99,7 @@ def molecule_rotation(pmg_struct,molecule,label_df,axis_vector,angle,reference_p
 	    # Get index from label of atom,
 	    # call sites from pymatgen struct
 	    # and parse the fractional coordinates
-	    coords=copy.deepcopy((df[df['atom_label']==atom]['pmg_site'].iloc[0]).frac_coords)
+	    coords=copy.deepcopy((label_df[label_df['atom_label']==atom]['pmg_site'].iloc[0]).frac_coords)
 	    
 	    ## Transformation (1)
 	    ## subtract the coordinate of rotation-axis-position  = reference point
@@ -120,7 +120,7 @@ def molecule_rotation(pmg_struct,molecule,label_df,axis_vector,angle,reference_p
 	    coords_temp=rotation.apply(coords_temp)
 	    # Move to reference point again
 	    coords=coords_temp+reference_point
-	    rotated_struct.sites[df[df['atom_label']==atom]['site_index'].iloc[0]].frac_coords=coords
+	    rotated_struct.sites[label_df[label_df['atom_label']==atom]['site_index'].iloc[0]].frac_coords=coords
 
 	return rotated_struct
 

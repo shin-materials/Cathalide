@@ -166,13 +166,13 @@ while loop_flag == 1:
     
 
 
-# # axis_vector and rotation angle
-# reference_point=struct.sites[label2site_index['C1']].frac_coords
-# axis_vector=np.array([0,1,0])  ## To be modified
-# angle_degree = 45 # degree
-# struct=molecule_rotation(struct,molecule,label2site_index,
-#                           axis_vector,angle_degree,reference_point)
-# struct.to(fmt='poscar',filename='test.vasp')
+# axis_vector and rotation angle
+reference_point=(df[df['atom_label']=='C1']['pmg_site'].iloc[0]).frac_coords
+axis_vector=np.array([0,1,0])  ## To be modified
+angle_degree = 45 # degree
+struct=molecule_rotation(struct,molecule,df,
+                          axis_vector,angle_degree,reference_point)
+struct.to(fmt='poscar',filename='test2.vasp')
 
 
 
