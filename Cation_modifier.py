@@ -175,9 +175,16 @@ struct=molecule_rotation(struct,molecule,df,
 struct.to(fmt='poscar',filename='test2.vasp')
 
 
-
+# Translation
+translation_vector=[0,0,0.2]
+translation_vector=np.array(translation_vector)
+translated_struct=copy.deepcopy(struct)
+for atom in molecule:
+    coords = copy.deepcopy((df[df['atom_label']==atom]['pmg_site'].iloc[0]).frac_coords)
+    translated_coords = coords + translation_vector
+    translated_struct.sites[df[df['atom_label']==atom]['site_index'].iloc[0]].frac_coords=translated_coords
     
-    
+translated_struct.to(fmt='poscar',filename='test2.vasp')
     
     
     
