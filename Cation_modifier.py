@@ -3,7 +3,7 @@ from pymatgen.core import Element
 from glob import glob
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from Functions import molecule_rotation, convert_site_index
+from Functions import molecule_rotation, convert_site_index, Write_POSCAR
 import copy
 import pandas as pd
 
@@ -38,19 +38,6 @@ for i in range(0,struct.num_sites):
                 'pmg_site':struct.sites[i],\
                 'element':str((struct.sites[i]).specie)},ignore_index=True)
 ################################################################
-
-
-def Bond_length(pmg_struct, label2site_index, atom1_label,atom2_label):
-    '''
-    input: atom1_label, atom2_label -- str,  Ex) Fe5, O1, 1, 8 etc. 
-            label2site_index -- dictionary defined in script
-            pmg_struct -- pymatgen structure
-    output: bondlength -- float, bond length of (atom1-atom2) will be calculated.
-    '''
-    atom1_pmg_index=convert_site_index(label2site_index, atom1_label)
-    atom2_pmg_index=convert_site_index(label2site_index, atom2_label)
-    bondlength=pmg_struct.get_distance(atom1_pmg_index,atom2_pmg_index)
-    return bondlength
 
 molecules_list=[]
 molecule=['C1','N1','N2','H1','H2','H3','H4','H5']
@@ -188,98 +175,9 @@ translated_struct.to(fmt='poscar',filename='test2.vasp')
 
 
 
-######### FUNCTIONS ###########
-def Write_POSCAR(filename,pmg_struct,element_sequence=None):
-    """
-    Parameters
-    ----------
-    filename : str
-        name of POSCAR file. PatternLength_PatternNumber_TransVector.vasp
-    CN_str : str
-        Sequence of numbers indicating coordination number of B-cations
-    lattice : numpy array
-        3x3 array describing lattice vectors
-    A_array : numpy array
-        n x 3 array; atomic position of A-caitons.
-    B_array : numpy array
-        n x 3 array; atomic position of B-caitons.
-    O_array : numpy array
-        list of lists. Sub-lists have 3 numbers representing position of oxygen atoms
-    A : str
-        Name of A-cation if not defined, Sr is used.
-    B : str
-        Name of B-cation if not defined, Fe is used.
-    Returns
-    -------
-    None.
-    """
-    if element_sequence is not None:
-        # if this argument has spaces,
-        # remove the spaces
-        element_sequence.replace(' ','')
-        sequence_list=[]
-        for i in element_sequence:
-            if i.isupper():
-                sequence_list.append(i)
-            else:
-                sequence_list[-1]=sequence_list[-1]+i
-    
-    out_file=open(filename,'w')
-    out_file.write("Generated POSCAR file\n") #first comment line
-    out_file.write("1.0\n") # scale 
-    for i in range(np.shape(lattice)[0]):
-        out_file.write("{0:20.10f} {1:20.10f} {2:20.10f}\n".format(lattice[i,0],lattice[i,1],lattice[i,2]))
-    out_file.write("   {0}   {1}   O\n".format(A,B)) # Atom labels
-    out_file.write("   {0}    {1}   {2}\n".format(np.shape(A_array)[0],
-                                              np.shape(B_array)[0],
-                                              np.shape(O_array)[0]))
-    out_file.write("   Direct\n")
-    for i in range(np.shape(A_array)[0]):
-        out_file.write("{0:16.10f} {1:19.10f} {2:19.10f}\n".format(A_array[i,0],A_array[i,1],A_array[i,2]))
-    # for i,B_site in enumerate(B_list):
-    #     out_file.write("    "+"        ".join('%.10f' % entry for entry in B_site))
-    #     out_file.write("\n")
-    #     out_file.close()
-    for i in range(np.shape(B_array)[0]):
-        out_file.write("{0:16.10f} {1:19.10f} {2:19.10f}\n".format(B_array[i,0],B_array[i,1],B_array[i,2]))
-    for i in range(np.shape(O_array)[0]):
-        out_file.write("{0:16.10f} {1:19.10f} {2:19.10f}\n".format(O_array[i,0],O_array[i,1],O_array[i,2]))
-    # Printing oxygen sites is a bit different as it is with list format
-    # for i,O_site in enumerate(O_list):
-    #     out_file.write("    "+"        ".join('%.10f' % entry for entry in O_site))
-    #     out_file.write("\n")
-    #     out_file.close()
 
-
-
-
-    ## Definition of lattice vectors
-# lattice = np.array([[a*np.sqrt(2), 0, 0],
-#                     [0, a*np.sqrt(6), 0],
-#                     [a*np.sqrt(2)*((t*3)%1),a*np.sqrt(6)*t,a/np.sqrt(3)]])
-lattice = struct.lattice.matrix
-species_list=struct.species
-reduced_species=[str(i) for n, i in enumerate(species_list) if i not in species_list[:n]]
-
-
-out_file=open('test.vasp','w')
-out_file.write("Generated POSCAR file\n") #first comment line
-out_file.write("1.0\n") # scale 
-for i in range(np.shape(lattice)[0]):
-    out_file.write("{0:20.10f} {1:20.10f} {2:20.10f}\n".format(lattice[i,0],lattice[i,1],lattice[i,2]))
-out_file.write("  "+"  ".join('%3s' % entry for entry in reduced_species))
-out_file.write("\n")
-num_each_element=[species_list.count(Element(i)) for i in reduced_species]
-out_file.write("  "+"  ".join('%3d' % entry for entry in num_each_element))
-out_file.write("\n")
-out_file.write("Direct\n")
-for element in reduced_species:
-    site_list=df[df['element']=='H']['pmg_site']
-    for site in site_list:
-        out_file.write("  "+"        ".join('%.10f' % entry for entry in site.frac_coords)+'\n')
-out_file.close()
 ## Write_POSCAR
-#Write_POSCAR('write_test.vasp',struct)
+Write_POSCAR('write_test.vasp',struct)
     
     
         

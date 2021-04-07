@@ -9,7 +9,7 @@ import numpy as np
 from pymatgen.core import Structure
 import copy
 from scipy.spatial.transform import Rotation as R
-
+from pymatgen.core import Element
 
 def convert_site_index(label2site_index,str_atom):
     """
@@ -173,3 +173,51 @@ def molecule_translation(pmg_struct,molecule,label2site_index,axis_vector,angle,
 	    rotated_struct.sites[label2site_index[atom]].frac_coords=coords
 
 	return rotated_struct
+
+######### FUNCTIONS ###########
+def Write_POSCAR(filename,struct, DF=df, element_sequence=None):
+    """
+    Parameters
+    ----------
+    filename : str
+        name of POSCAR file. PatternLength_PatternNumber_TransVector.vasp
+    struct : pymatgen Structure object
+        structure object to write as POSCAR
+    DF : Pandas dataframe
+        Pandas DataFrame with columns=['site_index','atom_label','pmg_site','element']
+    element_sequence : str
+        Sequence of elements to be written in POSCAR
+        ex) 'CNHPbI' or 'C N H Pb I' will affect the 7th line in the POSCAR file
+    Returns
+    -------
+    None.
+    """
+    # Idenfity lattice vectors
+    lattice = struct.lattice.matrix
+    # Get element of each atoms
+    species_list=struct.species
+    # Remove repeated entry in the element list
+    reduced_species=[str(i) for n, i in enumerate(species_list) if i not in species_list[:n]]
+    
+    out_file=open(filename,'w')
+    out_file.write("Generated POSCAR file\n") #first comment line
+    out_file.write("1.0\n") # scale 
+    # Print lattice part
+    for i in range(np.shape(lattice)[0]):
+        out_file.write("{0:20.10f} {1:20.10f} {2:20.10f}\n".format(lattice[i,0],lattice[i,1],lattice[i,2]))
+    # Print elements
+    out_file.write("  "+"  ".join('%3s' % entry for entry in reduced_species))
+    out_file.write("\n")
+    # Print the number of atoms for each element
+    num_each_element=[species_list.count(Element(i)) for i in reduced_species]
+    out_file.write("  "+"  ".join('%3d' % entry for entry in num_each_element))
+    out_file.write("\n")
+    
+    out_file.write("Direct\n")
+    for element in reduced_species:
+        site_list=DF[DF['element']=='H']['pmg_site']
+        for site in site_list:
+            out_file.write("  "+"        ".join('%.10f' % entry for entry in site.frac_coords)+'\n')
+    out_file.close()
+    
+    return
