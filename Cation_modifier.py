@@ -213,6 +213,16 @@ def Write_POSCAR(filename,pmg_struct,element_sequence=None):
     -------
     None.
     """
+    if element_sequence is not None:
+        # if this argument has spaces,
+        # remove the spaces
+        element_sequence.replace(' ','')
+        sequence_list=[]
+        for i in element_sequence:
+            if i.isupper():
+                sequence_list.append(i)
+            else:
+                sequence_list[-1]=sequence_list[-1]+i
     
     out_file=open(filename,'w')
     out_file.write("Generated POSCAR file\n") #first comment line
@@ -248,13 +258,15 @@ def Write_POSCAR(filename,pmg_struct,element_sequence=None):
 #                     [0, a*np.sqrt(6), 0],
 #                     [a*np.sqrt(2)*((t*3)%1),a*np.sqrt(6)*t,a/np.sqrt(3)]])
 lattice = struct.lattice.matrix
+species_list=struct.species
+reduced_species=[str(i) for n, i in enumerate(species_list) if i not in species_list[:n]]
+
+
 out_file=open('test.vasp','w')
 out_file.write("Generated POSCAR file\n") #first comment line
 out_file.write("1.0\n") # scale 
 for i in range(np.shape(lattice)[0]):
     out_file.write("{0:20.10f} {1:20.10f} {2:20.10f}\n".format(lattice[i,0],lattice[i,1],lattice[i,2]))
-species_list=struct.species
-reduced_species=[str(i) for n, i in enumerate(species_list) if i not in species_list[:n]]
 out_file.write("  "+"  ".join('%3s' % entry for entry in reduced_species))
 out_file.write("\n")
 num_each_element=[species_list.count(Element(i)) for i in reduced_species]
