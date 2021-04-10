@@ -7,7 +7,7 @@ from Functions import molecule_rotation, convert_site_index, Write_POSCAR
 import copy
 import pandas as pd
 
-struct = Structure.from_file("Test_structures/FPB_bulk_cubic.vasp")
+struct = Structure.from_file("FPB_FA_arranged_multiple_rotation.vasp")
 #struct = Structure.from_file("test.vasp")
 
 # Read bond data
@@ -39,8 +39,30 @@ for i in range(0,struct.num_sites):
                 'element':str((struct.sites[i]).specie)},ignore_index=True)
 ################################################################
 
+def update_dataframe(struct):
+    ############## USING PANDAS DATAFRAME ##########################
+    n_atom_count_dict=dict()
+    df=pd.DataFrame(columns=['site_index','atom_label','pmg_site','element'])
+    for i in range(0,struct.num_sites):
+        # Update label for each element
+        if struct[i].specie in list(n_atom_count_dict.keys()):
+            n_atom_count_dict.update({struct[i].specie:n_atom_count_dict[struct[i].specie]+1})
+        else:
+            n_atom_count_dict.update({struct[i].specie:1})
+            
+        label='{0}{1}'.format(struct.species[i], n_atom_count_dict[struct[i].specie])
+        # Append a site to the data frame
+        # If this part is costly, maybe using pd.concat would be faster (not sure yet)
+        df= df.append({'site_index':i, \
+                    'atom_label':'{0}{1}'.format(struct.species[i], n_atom_count_dict[struct[i].specie]), \
+                    'pmg_site':struct.sites[i],\
+                    'element':str((struct.sites[i]).specie)},ignore_index=True)
+    return (df, n_atom_count_dict)
+    ################################################################
+
+
 molecules_list=[]
-molecule=['C1','N1','N2','H1','H2','H3','H4','H5']
+molecule=['C3','N5','N6','H11','H12','H13','H14','H15']
 molecules_list.append(molecule)
 
 
@@ -150,15 +172,26 @@ while loop_flag == 1:
     1. Center of mass from mass-weighted average
     2. Volumetric center of mass..? by using convex hull?
 '''
-    
+"""
+ROTATION: Error with periodic boundary condition
+""" 
 
 
 # axis_vector and rotation angle
+molecule=['C1', 'N2', 'H1', 'N1', 'H4', 'H5', 'H3', 'H2']
 reference_point=(df[df['atom_label']=='C1']['pmg_site'].iloc[0]).frac_coords
-axis_vector=np.array([0,1,0])  ## To be modified
-angle_degree = 45 # degree
-struct=molecule_rotation(struct,molecule,df,
-                          axis_vector,angle_degree,reference_point)
+axis_vector=np.array([1,1,0])  ## To be modified
+angle_degree = 90 # degree
+struct=molecule_rotation(struct,molecule,df,axis_vector,angle_degree,reference_point)
+
+reference_point=(df[df['atom_label']=='C3']['pmg_site'].iloc[0]).frac_coords
+molecule=['C3','N5','N6','H11','H12','H13','H14','H15']
+axis_vector=np.array([-1,1,0])  ## To be modified
+angle_degree = 90 # degree
+struct=molecule_rotation(struct,molecule,df,axis_vector,angle_degree,reference_point)
+
+
+
 struct.to(fmt='poscar',filename='test2.vasp')
 
 
@@ -171,14 +204,26 @@ for atom in molecule:
     translated_coords = coords + translation_vector
     translated_struct.sites[df[df['atom_label']==atom]['site_index'].iloc[0]].frac_coords=translated_coords
     
-translated_struct.to(fmt='poscar',filename='test2.vasp')
-
-
+#translated_struct.to(fmt='poscar',filename='test2.vasp')
 
 
 ## Write_POSCAR
-Write_POSCAR('write_test.vasp',struct)
-    
+# Write_POSCAR('write_test.vasp',struct,label_df=df)
+
+# copy molecule
+"""
+Fucntionality:
+    0. Remove a cation
+    struct.remove_sites([0])
+    struct.remove_sites([df[df['atom_label']==atom]['site_index'].iloc[0]])
+    1. copy to specific site (copy and translate)
+        
+        add to n_atom_cound_dict
+        struct.sites.append(A1)
+    2. 
+
+"""
+
     
         
     
