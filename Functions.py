@@ -28,7 +28,33 @@ def convert_site_index(label2site_index,str_atom):
         pmg_site_index=label2site_index[str_atom]
     return pmg_site_index
 
+def update_df(pmg_struct):
+	"""
+	input:
+	pmg_struct: pymatgen structure. Structure containing organic molecule to rotate
 
+	output:
+	label_df: Pandas DataFrame 
+		with columns=['site_index','atom_label','pmg_site','element']
+	"""
+	n_atom_count_dict=dict()
+	df=pd.DataFrame(columns=['site_index','atom_label','pmg_site','element'])
+	for i in range(0,pmg_struct.num_sites):
+	    # Update label for each element
+	    if pmg_struct[i].specie in list(n_atom_count_dict.keys()):
+	        n_atom_count_dict.update({pmg_struct[i].specie:n_atom_count_dict[pmg_struct[i].specie]+1})
+	    else:
+	        n_atom_count_dict.update({pmg_struct[i].specie:1})
+	        
+	    label='{0}{1}'.format(pmg_struct.species[i], n_atom_count_dict[pmg_struct[i].specie])
+	    # Append a site to the data frame
+	    # If this part is costly, maybe using pd.concat would be faster (not sure yet)
+	    df= df.append({'site_index':i, \
+	                'atom_label':'{0}{1}'.format(pmg_struct.species[i], n_atom_count_dict[pmg_struct[i].specie]), \
+	                'pmg_site':pmg_struct.sites[i],\
+	                'element':str((pmg_struct.sites[i]).specie)},ignore_index=True)
+
+	return dataframe
 
 
 
