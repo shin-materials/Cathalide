@@ -3,7 +3,7 @@ from pymatgen.core import Element
 from glob import glob
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from Functions import molecule_rotation, convert_site_index, Write_POSCAR, molecule_finder
+from Functions import molecule_rotation, convert_site_index, Write_POSCAR, molecule_finder, update_df
 import copy
 import pandas as pd
 
@@ -20,24 +20,24 @@ elements_list=['C','H','N']
 # I need to operate with the center of mass
 # command: Element.C.atomic_mass
 
-############## USING PANDAS DATAFRAME ##########################
-n_atom_count_dict=dict()
-df=pd.DataFrame(columns=['site_index','atom_label','pmg_site','element'])
-for i in range(0,struct.num_sites):
-    # Update label for each element
-    if struct[i].specie in list(n_atom_count_dict.keys()):
-        n_atom_count_dict.update({struct[i].specie:n_atom_count_dict[struct[i].specie]+1})
-    else:
-        n_atom_count_dict.update({struct[i].specie:1})
+# ############## USING PANDAS DATAFRAME ##########################
+# n_atom_count_dict=dict()
+# df=pd.DataFrame(columns=['site_index','atom_label','pmg_site','element'])
+# for i in range(0,struct.num_sites):
+#     # Update label for each element
+#     if struct[i].specie in list(n_atom_count_dict.keys()):
+#         n_atom_count_dict.update({struct[i].specie:n_atom_count_dict[struct[i].specie]+1})
+#     else:
+#         n_atom_count_dict.update({struct[i].specie:1})
         
-    label='{0}{1}'.format(struct.species[i], n_atom_count_dict[struct[i].specie])
-    # Append a site to the data frame
-    # If this part is costly, maybe using pd.concat would be faster (not sure yet)
-    df= df.append({'site_index':i, \
-                'atom_label':'{0}{1}'.format(struct.species[i], n_atom_count_dict[struct[i].specie]), \
-                'pmg_site':struct.sites[i],\
-                'element':str((struct.sites[i]).specie)},ignore_index=True)
-################################################################
+#     label='{0}{1}'.format(struct.species[i], n_atom_count_dict[struct[i].specie])
+#     # Append a site to the data frame
+#     # If this part is costly, maybe using pd.concat would be faster (not sure yet)
+#     df= df.append({'site_index':i, \
+#                 'atom_label':'{0}{1}'.format(struct.species[i], n_atom_count_dict[struct[i].specie]), \
+#                 'pmg_site':struct.sites[i],\
+#                 'element':str((struct.sites[i]).specie)},ignore_index=True)
+# ################################################################
 
 def update_dataframe(struct):
     ############## USING PANDAS DATAFRAME ##########################
@@ -60,6 +60,7 @@ def update_dataframe(struct):
     return (df, n_atom_count_dict)
     ################################################################
 
+df=update_df(struct)
 
 molecules_list=[]
 molecule=['C3','N5','N6','H11','H12','H13','H14','H15']

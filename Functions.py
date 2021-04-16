@@ -34,11 +34,11 @@ def update_df(pmg_struct):
 	pmg_struct: pymatgen structure. Structure containing organic molecule to rotate
 
 	output:
-	label_df: Pandas DataFrame 
+	dataframe: Pandas DataFrame 
 		with columns=['site_index','atom_label','pmg_site','element']
 	"""
 	n_atom_count_dict=dict()
-	df=pd.DataFrame(columns=['site_index','atom_label','pmg_site','element'])
+	dataframe=pd.DataFrame(columns=['site_index','atom_label','pmg_site','element'])
 	for i in range(0,pmg_struct.num_sites):
 	    # Update label for each element
 	    if pmg_struct[i].specie in list(n_atom_count_dict.keys()):
@@ -49,7 +49,7 @@ def update_df(pmg_struct):
 	    label='{0}{1}'.format(pmg_struct.species[i], n_atom_count_dict[pmg_struct[i].specie])
 	    # Append a site to the data frame
 	    # If this part is costly, maybe using pd.concat would be faster (not sure yet)
-	    df= df.append({'site_index':i, \
+	    datafram= datafram.append({'site_index':i, \
 	                'atom_label':'{0}{1}'.format(pmg_struct.species[i], n_atom_count_dict[pmg_struct[i].specie]), \
 	                'pmg_site':pmg_struct.sites[i],\
 	                'element':str((pmg_struct.sites[i]).specie)},ignore_index=True)
