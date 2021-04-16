@@ -3,7 +3,7 @@ from pymatgen.core import Element
 from glob import glob
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from Functions import molecule_rotation, convert_site_index, Write_POSCAR, molecule_finder, update_df
+from Functions import molecule_rotation, convert_site_index, Write_POSCAR, molecule_finder, create_df
 import copy
 import pandas as pd
 
@@ -173,9 +173,6 @@ while loop_flag == 1:
     1. Center of mass from mass-weighted average
     2. Volumetric center of mass..? by using convex hull?
 '''
-"""
-ROTATION: Error with periodic boundary condition
-""" 
 
 
 # axis_vector and rotation angle
@@ -183,13 +180,13 @@ molecule=['C1', 'N2', 'H1', 'N1', 'H4', 'H5', 'H3', 'H2']
 reference_point=(df[df['atom_label']=='C1']['pmg_site'].iloc[0]).frac_coords
 axis_vector=np.array([1,1,0])  ## To be modified
 angle_degree = 90 # degree
-#struct=molecule_rotation(struct,molecule,df,axis_vector,angle_degree,reference_point)
+#struct=molecule_rotation(struct,molecule,axis_vector,angle_degree,reference_point)
 
 reference_point=(df[df['atom_label']=='C3']['pmg_site'].iloc[0]).frac_coords
 molecule=['C3','N5','N6','H11','H12','H13','H14','H15']
 axis_vector=np.array([-1,1,0])  ## To be modified
 angle_degree = 90 # degree
-#struct=molecule_rotation(struct,molecule,df,axis_vector,angle_degree,reference_point)
+#struct=molecule_rotation(struct,molecule,axis_vector,angle_degree,reference_point)
 
 
 
@@ -209,7 +206,7 @@ for atom in molecule:
 
 
 ## Write_POSCAR
-# Write_POSCAR('write_test.vasp',struct,label_df=df)
+# Write_POSCAR('write_test.vasp',struct)
 
 # copy molecule
 """
@@ -232,7 +229,51 @@ temp=['C1','C2','C3','C4']
     
 # What if organic molecule has multiple carbon atoms?
 carbon_list=df[df['element']=='C']['atom_label']
+carbon_dict=dict()
+# dictionary of bool. True: added to molecule. False: not added to molecule yet
 for carbon in carbon_list:
-    molecule=molecule_finder(struct,carbon,df)
+    carbon_dict[carbon]=False
+for carbon in carbon_list:
+    if carbon_dict[carbon] == False:    
+        molecule=molecule_finder(struct,carbon,df)
+    else:
+        continue
+    
+    for atom in molecule:
+        if atom in carbon_dict.keys():
+            carbon_dict[atom] = True
     molecules_list.append(molecule)
+    
+def list_all_molecules(pmg_struct):
+    """
+
+    Parameters
+    ----------
+    pmg_struct : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    molecules : TYPE
+        DESCRIPTION.
+
+    """
+    df=create_df(struct)
+    carbon_list=df[df['element']=='C']['atom_label']
+    carbon_dict=dict()
+    for carbon in carbon_list:
+        carbon_dict[carbon]=False
+    
+    molecules=[]
+    for carbon in carbon_list:
+        if carbon_dict[carbon] == False:    
+            molecule=molecule_finder(struct,carbon,df)
+        else:
+            continue
+        
+        for atom in molecule:
+            if atom in carbon_dict.keys():
+                carbon_dict[atom] = True
+        molecules.append(molecule)
+    return molecules
 

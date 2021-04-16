@@ -28,7 +28,7 @@ def convert_site_index(label2site_index,str_atom):
         pmg_site_index=label2site_index[str_atom]
     return pmg_site_index
 
-def update_df(pmg_struct):
+def create_df(pmg_struct):
 	"""
 	input:
 	pmg_struct: pymatgen structure. Structure containing organic molecule to rotate
@@ -58,13 +58,12 @@ def update_df(pmg_struct):
 
 
 
-def molecule_rotation(pmg_struct,molecule,label_df,axis_vector,angle,reference_point):
+def molecule_rotation(pmg_struct,molecule,axis_vector,angle,reference_point):
 	"""
 	input:
 	pmg_struct: pymatgen structure. Structure containing organic molecule to rotate
 	molecule: list of strings, containing atomic labels composing molecule to rotate
 				ex) molecule=['C1','N1','N2','H1','H2','H3','H4','H5']
-	label_df: Pandas DataFrame with columns=['site_index','atom_label','pmg_site','element']
 	axis_vector: numpy array with size (3,). This defines the direction of rotation axis
 				This function will normalize the vector.
 	angle - float: degree angles to rotate the molecule with respect to the rotation axis.
@@ -75,6 +74,9 @@ def molecule_rotation(pmg_struct,molecule,label_df,axis_vector,angle,reference_p
 	output:
 	rotated_struct: pymatgen structure 
 	"""
+	# Prepare df
+	label_df=create_df(pmg_struct)
+
 	rotated_struct=copy.deepcopy(pmg_struct)
 	
 	# convert reference point to cartesian
@@ -125,26 +127,23 @@ def molecule_rotation(pmg_struct,molecule,label_df,axis_vector,angle,reference_p
 
 
 
-def molecule_translation(pmg_struct,molecule,label_df,translation_vector):
+def molecule_translation(pmg_struct,molecule,translation_vector):
 	"""
 	input:
 	pmg_struct: pymatgen structure. 
 		Structure containing organic molecule to rotate
 	molecule: list of strings
 		 containing atomic labels composing molecule to rotate
-				ex) molecule=['C1','N1','N2','H1','H2','H3','H4','H5']
-	label2site_index: dictionary defined in script
 	translation_vector: List of size 3, or numpy array with size (3,)
 		This defines the vector of translation of the molecule
-	angle - float: degree angles to rotate the molecule with respect to the rotation axis.
-				The rotation will be done anti-clockwise
-	reference_point - numpy array with size (3,). This is a fractional coordinate of point 
-				that the rotation axis goes through
-	
 	output:
 	translated_struct: pymatgen structure 
 
 	"""
+
+	# Prepare df
+	label_df=create_df(pmg_struct)
+
 	# convert to numpy array
 	translation_vector=np.array(translation_vector)
 
@@ -159,7 +158,7 @@ def molecule_translation(pmg_struct,molecule,label_df,translation_vector):
 	return translated_struct
 
 ######### FUNCTIONS ###########
-def Write_POSCAR(filename,struct, label_df, element_sequence=None):
+def Write_POSCAR(filename,struct,element_sequence=None):
     """
     Parameters
     ----------
@@ -176,6 +175,10 @@ def Write_POSCAR(filename,struct, label_df, element_sequence=None):
     -------
     None.
     """
+    
+	# Prepare df
+	label_df=create_df(pmg_struct)
+
     # Idenfity lattice vectors
     lattice = struct.lattice.matrix
     # Get element of each atoms
@@ -255,15 +258,15 @@ def molecule_rotation_bak(pmg_struct,molecule,label2site_index,axis_vector,angle
 
 	return rotated_struct
 
-def molecule_finder(pmg_struct,starting_atom_label,label_df):
+def molecule_finder(pmg_struct,starting_atom_label):
 	### IDENTIFYING MOLECULE
 	## Start from any atom in a molecule, and spread the search
 	# Consider bond information
-	
 	bond_csv=pd.read_csv('Bond_data_from_VESTA.csv')
 	# molecule_formula='CN2H5'
 
-
+	# Prepare df
+	label_df=create_df(pmg_struct)
 	# starting_atom=pmg_struct.sites[label2site_index['C1']]
 	# pd version
 	#starting_atom=label_df[label_df['atom_label']==starting_atom_label]['pmg_site'].iloc[0]
