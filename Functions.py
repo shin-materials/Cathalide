@@ -177,7 +177,7 @@ def Write_POSCAR(filename,struct,element_sequence=None):
     """
     
 	# Prepare df
-	label_df=create_df(pmg_struct)
+    label_df=create_df(struct)
 
     # Idenfity lattice vectors
     lattice = struct.lattice.matrix
@@ -202,7 +202,7 @@ def Write_POSCAR(filename,struct,element_sequence=None):
     
     out_file.write("Direct\n")
     for element in reduced_species:
-        site_list=label_df[label_df['element']=='H']['pmg_site']
+        site_list=label_df[label_df['element']==element]['pmg_site']
         for site in site_list:
             out_file.write("  "+"        ".join('%.10f' % entry for entry in site.frac_coords)+'\n')
     out_file.close()

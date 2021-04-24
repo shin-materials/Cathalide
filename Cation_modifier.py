@@ -60,7 +60,7 @@ def update_dataframe(struct):
     return (df, n_atom_count_dict)
     ################################################################
 
-df=update_df(struct)
+df=create_df(struct)
 
 molecules_list=[]
 molecule=['C3','N5','N6','H11','H12','H13','H14','H15']
