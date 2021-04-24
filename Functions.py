@@ -12,6 +12,44 @@ from scipy.spatial.transform import Rotation as R
 from pymatgen.core import Element
 import pandas as pd
 
+
+def list_all_molecules(pmg_struct):
+    """
+
+    Parameters
+    ----------
+    pmg_struct : pymatgen Structure
+        VASP POSCAR structure with organic molecule.
+
+    Returns
+    -------
+    molecules : list
+        List of molecule. molecule is a list of atom labels.
+
+    """
+    df=create_df(struct)
+    # Make dictionary of carbon atoms
+    carbon_list=df[df['element']=='C']['atom_label']
+    # Each item is True or False. True if it is already captured by molecule finder
+    carbon_dict=dict()
+    for carbon in carbon_list:
+        carbon_dict[carbon]=False
+    
+    
+    molecules=[]
+    for carbon in carbon_list:
+        if carbon_dict[carbon] == False:    
+            # Calls molecule finder based on carbon atom
+            molecule=molecule_finder(struct,carbon,df)
+        else:
+            continue
+        
+        for atom in molecule:
+            if atom in carbon_dict.keys():
+                carbon_dict[atom] = True
+        molecules.append(molecule)
+    return molecules
+
 def convert_site_index(label2site_index,str_atom):
     """
     input: label2site_index -- dictionary defined in script
