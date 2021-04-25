@@ -117,10 +117,18 @@ for atom_label in molecule:
     temp=copy.deepcopy(df[df['atom_label']==atom_label]['pmg_site'].iloc[0])
     list_pmg_sites.append(temp)
 
-# remove a site
-atom_index = df[df['atom_label']=='C1']['site_index'].iloc[0]
-struct.remove_sites([atom_index])
 
+copy_point=reference_point=(df[df['atom_label']=='C1']['pmg_site'].iloc[0]).frac_coords
+paste_point=reference_point=(df[df['atom_label']=='Cs1']['pmg_site'].iloc[0]).frac_coords
+atom_index = df[df['atom_label']=='Cs1']['site_index'].iloc[0]
+# remove a site
+new_struct=copy.deepcopy(struct)
+struct.remove_sites([atom_index])
+for atom in list_pmg_sites:
+    atom.frac_coords = atom.frac_coords + paste_point - copy_point
+    new_struct.sites.append(atom)
+
+Write_POSCAR('write_test.vasp',new_struct)
 """
 At some point, I have to update the DataFrame
 
