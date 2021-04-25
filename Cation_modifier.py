@@ -8,7 +8,7 @@ from Functions import list_all_molecules, molecule_finder, create_df
 import copy
 import pandas as pd
 
-struct = Structure.from_file("FPB_FA_arranged_multiple_rotation.vasp")
+struct = Structure.from_file("case2.vasp")
 #struct = Structure.from_file("test.vasp")
 
 
@@ -73,9 +73,9 @@ axis_vector=np.array([1,1,0])  ## To be modified
 angle_degree = 90 # degree
 #struct=molecule_rotation(struct,molecule,axis_vector,angle_degree,reference_point)
 
-reference_point=(df[df['atom_label']=='C3']['pmg_site'].iloc[0]).frac_coords
-molecule=['C3','N5','N6','H11','H12','H13','H14','H15']
-#molecule = molecule_finder(struct,'C3')
+reference_point=(df[df['atom_label']=='C2']['pmg_site'].iloc[0]).frac_coords
+#molecule=['C3','N5','N6','H11','H12','H13','H14','H15']
+molecule = molecule_finder(struct,'C2')
 axis_vector=np.array([-1,1,0])  ## To be modified
 angle_degree = 90 # degree
 #struct=molecule_rotation(struct,molecule,axis_vector,angle_degree,reference_point)
@@ -97,8 +97,38 @@ for atom in molecule:
 # Write_POSCAR('write_test.vasp',struct)
 
 
+###############################
+#### Copy molecules  ####
+###############################
+molecule = molecule_finder(struct, 'C1')
 
-    
+'''
+Copy periodic sites.
+Possibly
+1) remove one site or molecule
+2) copy site information from a molecule
+3) add to structure
+'''
+
+molecule = molecule_finder(struct,'C1')
+
+list_pmg_sites = []
+for atom_label in molecule:
+    temp=copy.deepcopy(df[df['atom_label']==atom_label]['pmg_site'].iloc[0])
+    list_pmg_sites.append(temp)
+
+# remove a site
+atom_index = df[df['atom_label']=='C1']['site_index'].iloc[0]
+struct.remove_sites([atom_index])
+
+"""
+At some point, I have to update the DataFrame
+
++ copy molecule from another POSCAR
+
++ store the molecule geometry in a dataset
+"""
+
 ######################################
 ######## FIND MOLECULES ##############
 ######################################
