@@ -126,9 +126,18 @@ new_struct=copy.deepcopy(struct)
 struct.remove_sites([atom_index])
 for atom in list_pmg_sites:
     atom.frac_coords = atom.frac_coords + paste_point - copy_point
+    # add to 
     new_struct.sites.append(atom)
 
-Write_POSCAR('write_test.vasp',new_struct)
+new_df=create_df(new_struct)
+Write_POSCAR(new_struct,filename='write_test.vasp')
+
+new_labels=[]
+for atom in list_pmg_sites:
+    new_labels.append(new_df[new_df['pmg_site']==atom]['atom_label'].iloc[0])
+    
+print("The following atoms are added")
+print(new_labels)
 """
 At some point, I have to update the DataFrame
 

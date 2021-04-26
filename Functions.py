@@ -191,7 +191,7 @@ def molecule_translation(pmg_struct,molecule,translation_vector):
 
 	return translated_struct
 
-def Write_POSCAR(filename,struct,element_sequence=None):
+def Write_POSCAR(struct,filename,element_sequence=None):
     """
     Parameters
     ----------
