@@ -153,8 +153,8 @@ Reference point of molecule:
 for site in pmg_sites_in_molecule:
     print(site.coords)
 
+# Example to create a periodic site in lattice
 from pymatgen.core import PeriodicSite
-
 temp_dict=dict()
 ### Dict making
 temp_dict["species"]=[{'element': 'C', 'occu': 1}]
@@ -162,6 +162,18 @@ temp_dict["abc"]=struct.lattice.get_fractional_coords(np.array([5.96235709, 5.96
 #temp_dict["lattice"]=struct.lattice.as_dict()
 PeriodicSite.from_dict(temp_dict,struct.lattice)
 
+## CONVEXHULL
+temp_array = np.zeros((len(pmg_sites_in_molecule),3))
+
+for i,site in enumerate(pmg_sites_in_molecule):
+    temp_array[i,:]=site.coords
+
+test=scipy.spatial.ConvexHull(temp_array)
+c=[] # This is the centroid
+for i in range(test.points.shape[1]):
+    c.append(np.mean(test.points[test.vertices,i]))
+    
+    
 ######################################
 ######## FIND MOLECULES ##############
 ######################################
