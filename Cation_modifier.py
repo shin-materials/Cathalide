@@ -7,6 +7,7 @@ from Functions import molecule_rotation, convert_site_index, Write_POSCAR
 from Functions import list_all_molecules, molecule_finder, create_df
 import copy
 import pandas as pd
+import scipy
 
 struct = Structure.from_file("case2.vasp")
 #struct = Structure.from_file("test.vasp")
@@ -112,10 +113,10 @@ Possibly
 
 molecule = molecule_finder(struct,'C1')
 
-list_pmg_sites = []
+pmg_sites_in_molecule = []
 for atom_label in molecule:
     temp=copy.deepcopy(df[df['atom_label']==atom_label]['pmg_site'].iloc[0])
-    list_pmg_sites.append(temp)
+    pmg_sites_in_molecule.append(temp)
 
 
 copy_point=reference_point=(df[df['atom_label']=='C1']['pmg_site'].iloc[0]).frac_coords
@@ -124,7 +125,7 @@ atom_index = df[df['atom_label']=='Cs1']['site_index'].iloc[0]
 # remove a site
 new_struct=copy.deepcopy(struct)
 struct.remove_sites([atom_index])
-for atom in list_pmg_sites:
+for atom in pmg_sites_in_molecule:
     atom.frac_coords = atom.frac_coords + paste_point - copy_point
     # add to 
     new_struct.sites.append(atom)
@@ -133,7 +134,7 @@ new_df=create_df(new_struct)
 Write_POSCAR(new_struct,filename='write_test.vasp')
 
 new_labels=[]
-for atom in list_pmg_sites:
+for atom in pmg_sites_in_molecule:
     new_labels.append(new_df[new_df['pmg_site']==atom]['atom_label'].iloc[0])
     
 print("The following atoms are added")
@@ -144,7 +145,22 @@ At some point, I have to update the DataFrame
 + copy molecule from another POSCAR
 
 + store the molecule geometry in a dataset
+
+Reference point of molecule:
+    Default is the convex hull (from scipy)
 """
+
+for site in pmg_sites_in_molecule:
+    print(site.coords)
+
+from pymatgen.core import PeriodicSite
+
+temp_dict=dict()
+### Dict making
+temp_dict["species"]=[{'element': 'C', 'occu': 1}]
+temp_dict["abc"]=struct.lattice.get_fractional_coords(np.array([5.96235709, 5.96628443, 3.15608099])) #default is carte
+#temp_dict["lattice"]=struct.lattice.as_dict()
+PeriodicSite.from_dict(temp_dict,struct.lattice)
 
 ######################################
 ######## FIND MOLECULES ##############
