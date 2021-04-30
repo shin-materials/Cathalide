@@ -153,6 +153,15 @@ Reference point of molecule:
 for site in pmg_sites_in_molecule:
     print(site.coords)
 
+"""
+Data structure of molecule data
+xyz file
+Reference point is 0,0,0
+coordinate is cartesian
+
+"""
+
+
 # Example to create a periodic site in lattice
 from pymatgen.core import PeriodicSite
 temp_dict=dict()
@@ -161,6 +170,8 @@ temp_dict["species"]=[{'element': 'C', 'occu': 1}]
 temp_dict["abc"]=struct.lattice.get_fractional_coords(np.array([5.96235709, 5.96628443, 3.15608099])) #default is carte
 #temp_dict["lattice"]=struct.lattice.as_dict()
 PeriodicSite.from_dict(temp_dict,struct.lattice)
+
+
 
 ## CONVEXHULL
 temp_array = np.zeros((len(pmg_sites_in_molecule),3))
@@ -172,8 +183,37 @@ test=scipy.spatial.ConvexHull(temp_array)
 c=[] # This is the centroid
 for i in range(test.points.shape[1]):
     c.append(np.mean(test.points[test.vertices,i]))
+
+
+####
+## GET MOLECULE STRUCTURE FROM XYZ FILE
+####
     
-    
+molecule_file = open("FA.xyz",'r')
+lines = molecule_file.readlines()
+num_atoms=eval(lines[0].strip())
+element_list=[]
+coordinates = np.zeros((num_atoms,3))
+for i, line in enumerate(lines[2:2+num_atoms]):
+    element_list.append(line.split()[0])
+    for j in range(3):
+        coordinates[i,j] = float(line.split()[j+1])
+hull = scipy.spatial.ConvexHull(coordinates)
+c=[] # This is the centroid
+for i in range(hull.points.shape[1]):
+    c.append(np.mean(hull.points[hull.vertices,i]))
+# Translate to the centroid of convex hull
+for i in coordinates:
+    i -= c
+
+### Write molecule xyz file ####
+write_file = open("FA_write_test.xyz",'w')
+write_file.write("{0}\n".format(num_atoms))
+write_file.write("Reference point is 0,0,0. This is the centroid of the convex hull\n")
+for i in range(num_atoms):
+    write_file.write(" {0}   {1: .6f}   {2: .6f}   {3: .6f}\n".format(
+        element_list[i], coordinates[i,0], coordinates[i,1], coordinates[i,2]))
+write_file.close()
 ######################################
 ######## FIND MOLECULES ##############
 ######################################
