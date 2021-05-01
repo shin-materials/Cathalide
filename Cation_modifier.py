@@ -214,6 +214,38 @@ for i in range(num_atoms):
     write_file.write(" {0}   {1: .6f}   {2: .6f}   {3: .6f}\n".format(
         element_list[i], coordinates[i,0], coordinates[i,1], coordinates[i,2]))
 write_file.close()
+
+
+class Shin_molecule:
+    def __init__(self, num_atoms: int = 0,
+                 element_list: list = [],
+                 coordinates: np.ndarray=np.array([[0,0,0]]), 
+                 centroid: list = [0,0,0]):
+        # number of atoms in the molecule
+        self.num_atoms = num_atoms
+        # (num_atoms,3) size of np array
+        self.coordinates = coordinates
+        # center point of convex hull
+        self.centroid = centroid
+    def from_xyz(filename):
+        data_file = open(filename,'r')
+        lines = data_file.readlines()
+        num_atoms=eval(lines[0].strip())
+        element_list=[]
+        coordinates = np.zeros((num_atoms,3))
+        for i, line in enumerate(lines[2:2+num_atoms]):
+            element_list.append(line.split()[0])
+            for j in range(3):
+                coordinates[i,j] = float(line.split()[j+1])
+        hull = scipy.spatial.ConvexHull(coordinates)
+        c=[] # This is the centroid
+        for i in range(hull.points.shape[1]):
+            c.append(np.mean(hull.points[hull.vertices,i]))
+        # Translate to the centroid of convex hull
+        for i in coordinates:
+            i -= c
+        return Shin_molecule(num_atoms, element_list, coordinates, c)
+
 ######################################
 ######## FIND MOLECULES ##############
 ######################################
