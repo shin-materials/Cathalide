@@ -245,6 +245,26 @@ class Shin_molecule:
         for i in coordinates:
             i -= c
         return Shin_molecule(num_atoms, element_list, coordinates, c)
+    def from_atom_labels_in_pmg_struct(list_atom_label,pmg_struct):
+        # create df from pmg_struct
+        df=create_df(pmg_struct)
+        
+        num_atoms = len(list_atom_label)
+        element_list = []
+        coordinates = np.zeros((num_atoms,3))
+        for i, atom_label in enumerate(list_atom_label):
+            pmg_atom=df[df['atom_label']==atom_label]['pmg_site'].iloc[0]
+            coordinates[i,:] = pmg_atom.coords
+            element_list.append(df[df['atom_label']==atom_label]['element'].iloc[0])
+            
+        hull = scipy.spatial.ConvexHull(coordinates)
+        c=[] # This is the centroid
+        for i in range(hull.points.shape[1]):
+            c.append(np.mean(hull.points[hull.vertices,i]))
+        # Translate to the centroid of convex hull
+        for i in coordinates:
+            i -= c
+        return Shin_molecule(num_atoms, element_list, coordinates, c)
 
 ######################################
 ######## FIND MOLECULES ##############
