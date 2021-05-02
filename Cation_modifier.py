@@ -245,6 +245,16 @@ class Shin_molecule:
         for i in coordinates:
             i -= c
         return Shin_molecule(num_atoms, element_list, coordinates, c)
+    def to_xyz(filename):
+        write_file = open(filename,'w')
+        write_file.write("{0}\n".format(self.num_atoms))
+        write_file.write("Reference point is 0,0,0. This is the centroid of the convex hull\n")
+        for i in range(num_atoms):
+            write_file.write(" {0}   {1: .6f}   {2: .6f}   {3: .6f}\n".format(
+                element_list[i], coordinates[i,0]-self.centroid[0], coordinates[i,1]-self.centroid[1], coordinates[i,2]-self.centroid[2]))
+        write_file.close()
+        return None
+    
     def from_atom_labels_in_pmg_struct(list_atom_label,pmg_struct):
         # create df from pmg_struct
         df=create_df(pmg_struct)
@@ -265,6 +275,7 @@ class Shin_molecule:
         for i in coordinates:
             i -= c
         return Shin_molecule(num_atoms, element_list, coordinates, c)
+    
 
 ######################################
 ######## FIND MOLECULES ##############
