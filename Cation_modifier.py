@@ -300,65 +300,68 @@ class Shin_molecule:
         return Shin_molecule(num_atoms, element_list, coordinates, c)
     
 
-class Shin_molecule_bak:
-    def __init__(self, num_atoms: int = 0,
-                 element_list: list = [],
-                 coordinates: np.ndarray=np.array([[0,0,0]]), 
-                 centroid: list = [0,0,0]):
-        # number of atoms in the molecule
-        self.num_atoms = num_atoms
-        # (num_atoms,3) size of np array
-        self.coordinates = coordinates
-        # center point of convex hull
-        self.centroid = centroid
-    def from_xyz(filename):
-        data_file = open(filename,'r')
-        lines = data_file.readlines()
-        num_atoms=eval(lines[0].strip())
-        element_list=[]
-        coordinates = np.zeros((num_atoms,3))
-        for i, line in enumerate(lines[2:2+num_atoms]):
-            element_list.append(line.split()[0])
-            for j in range(3):
-                coordinates[i,j] = float(line.split()[j+1])
-        hull = scipy.spatial.ConvexHull(coordinates)
-        c=[] # This is the centroid
-        for i in range(hull.points.shape[1]):
-            c.append(np.mean(hull.points[hull.vertices,i]))
-        # Translate to the centroid of convex hull
-        for i in coordinates:
-            i -= c
-        return Shin_molecule(num_atoms, element_list, coordinates, c)
-    def to_xyz(self,filename):
-        write_file = open(filename,'w')
-        write_file.write("{0}\n".format(self.num_atoms))
-        write_file.write("Reference point is 0,0,0. This is the centroid of the convex hull\n")
-        for i in range(num_atoms):
-            write_file.write(" {0}   {1: .6f}   {2: .6f}   {3: .6f}\n".format(
-                element_list[i], coordinates[i,0]-self.centroid[0], coordinates[i,1]-self.centroid[1], coordinates[i,2]-self.centroid[2]))
-        write_file.close()
-        return None
+# class Shin_molecule_bak:
+#     """
+#     version of 20210504
+#     """
+#     def __init__(self, num_atoms: int = 0,
+#                  element_list: list = [],
+#                  coordinates: np.ndarray=np.array([[0,0,0]]), 
+#                  centroid: list = [0,0,0]):
+#         # number of atoms in the molecule
+#         self.num_atoms = num_atoms
+#         # (num_atoms,3) size of np array
+#         self.coordinates = coordinates
+#         # center point of convex hull
+#         self.centroid = centroid
+#     def from_xyz(filename):
+#         data_file = open(filename,'r')
+#         lines = data_file.readlines()
+#         num_atoms=eval(lines[0].strip())
+#         element_list=[]
+#         coordinates = np.zeros((num_atoms,3))
+#         for i, line in enumerate(lines[2:2+num_atoms]):
+#             element_list.append(line.split()[0])
+#             for j in range(3):
+#                 coordinates[i,j] = float(line.split()[j+1])
+#         hull = scipy.spatial.ConvexHull(coordinates)
+#         c=[] # This is the centroid
+#         for i in range(hull.points.shape[1]):
+#             c.append(np.mean(hull.points[hull.vertices,i]))
+#         # Translate to the centroid of convex hull
+#         for i in coordinates:
+#             i -= c
+#         return Shin_molecule(num_atoms, element_list, coordinates, c)
+#     def to_xyz(self,filename):
+#         write_file = open(filename,'w')
+#         write_file.write("{0}\n".format(self.num_atoms))
+#         write_file.write("Reference point is 0,0,0. This is the centroid of the convex hull\n")
+#         for i in range(num_atoms):
+#             write_file.write(" {0}   {1: .6f}   {2: .6f}   {3: .6f}\n".format(
+#                 element_list[i], coordinates[i,0]-self.centroid[0], coordinates[i,1]-self.centroid[1], coordinates[i,2]-self.centroid[2]))
+#         write_file.close()
+#         return None
     
-    def from_atom_labels_in_pmg_struct(list_atom_label,pmg_struct):
-        # create df from pmg_struct
-        df=create_df(pmg_struct)
+#     def from_atom_labels_in_pmg_struct(list_atom_label,pmg_struct):
+#         # create df from pmg_struct
+#         df=create_df(pmg_struct)
         
-        num_atoms = len(list_atom_label)
-        element_list = []
-        coordinates = np.zeros((num_atoms,3))
-        for i, atom_label in enumerate(list_atom_label):
-            pmg_atom=df[df['atom_label']==atom_label]['pmg_site'].iloc[0]
-            coordinates[i,:] = pmg_atom.coords
-            element_list.append(df[df['atom_label']==atom_label]['element'].iloc[0])
+#         num_atoms = len(list_atom_label)
+#         element_list = []
+#         coordinates = np.zeros((num_atoms,3))
+#         for i, atom_label in enumerate(list_atom_label):
+#             pmg_atom=df[df['atom_label']==atom_label]['pmg_site'].iloc[0]
+#             coordinates[i,:] = pmg_atom.coords
+#             element_list.append(df[df['atom_label']==atom_label]['element'].iloc[0])
             
-        hull = scipy.spatial.ConvexHull(coordinates)
-        c=[] # This is the centroid
-        for i in range(hull.points.shape[1]):
-            c.append(np.mean(hull.points[hull.vertices,i]))
-        # Translate to the centroid of convex hull
-        for i in coordinates:
-            i -= c
-        return Shin_molecule(num_atoms, element_list, coordinates, c)
+#         hull = scipy.spatial.ConvexHull(coordinates)
+#         c=[] # This is the centroid
+#         for i in range(hull.points.shape[1]):
+#             c.append(np.mean(hull.points[hull.vertices,i]))
+#         # Translate to the centroid of convex hull
+#         for i in coordinates:
+#             i -= c
+#         return Shin_molecule(num_atoms, element_list, coordinates, c)
 
 
 ######################################
