@@ -245,7 +245,7 @@ class Shin_molecule:
         for i in coordinates:
             i -= c
         return Shin_molecule(num_atoms, element_list, coordinates, c)
-    def to_xyz(filename):
+    def to_xyz(self,filename):
         write_file = open(filename,'w')
         write_file.write("{0}\n".format(self.num_atoms))
         write_file.write("Reference point is 0,0,0. This is the centroid of the convex hull\n")
