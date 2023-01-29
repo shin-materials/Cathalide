@@ -11,7 +11,7 @@ import copy
 from scipy.spatial.transform import Rotation as R
 from pymatgen.core import Element
 import pandas as pd
-import scipy
+
 
 class Shin_molecule:
     def __init__(self, num_atoms: int = 0,
@@ -174,11 +174,11 @@ def create_df(pmg_struct):
 	    label='{0}{1}'.format(pmg_struct.species[i], n_atom_count_dict[pmg_struct[i].specie])
 	    # Append a site to the data frame
 	    # If this part is costly, maybe using pd.concat would be faster (not sure yet)
-	    temp_df=pd.DataFrame(data={'site_index':[i], \
+	    temp_df=pd.DataFrame(data={'site_index':i, \
             'atom_label':'{0}{1}'.format(pmg_struct.species[i], n_atom_count_dict[pmg_struct[i].specie]), \
             'pmg_site':pmg_struct.sites[i],\
             'element':str((pmg_struct.sites[i]).specie)})
-	    dataframe= pd.concat([dataframe,temp_df],ignore_index=True)
+	    dataframe= pd.concat(dataframe,temp_df,ignore_index=True)
 
 	    # dataframe= dataframe.append({'site_index':i, \
 	    #             'atom_label':'{0}{1}'.format(pmg_struct.species[i], n_atom_count_dict[pmg_struct[i].specie]), \
