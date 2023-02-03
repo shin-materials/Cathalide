@@ -5,5 +5,9 @@ Cathalide intends to modulate oragnic molecules in perovskite structures. Unlike
 This uses modified version of pymatgen functions. 
 Currently, only VASP formats are allows (POSCAR) files, but Quantum Espresso will be soon to be implemented.
 
-As of 2022,
-the latest version of pandas has eliminated append function, where some features run into input/output error in some versions and OS. This will be resolved soon.
+Features to be implemented:
+1. Assigning reference points more effectively. For example, if I have xyz file of molecule, it is hard to align to certain direction in the cell.
+2. Modifying the molecular structures. For C-C chains, an user might want to rotate the part of molecules.
+3. Prepare high-symmetry molecules. For example, MA (H3C-NH3) can be prepared with three-fold rotation symmetry.
+4. Preparation of perovskites matrix with different distortion patterns.
+
